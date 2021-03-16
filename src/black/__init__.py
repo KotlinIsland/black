@@ -6344,14 +6344,23 @@ def _fixup_ast_constants(
     node: Union[ast.AST, ast3.AST, ast27.AST]
 ) -> Union[ast.AST, ast3.AST, ast27.AST]:
     """Map ast nodes deprecated in 3.8 to Constant."""
-    if isinstance(node, (ast.Str, ast3.Str, ast27.Str, ast.Bytes, ast3.Bytes)):
-        return ast.Constant(value=node.s)
+    if sys.version_info >= (3, 8):
+        if isinstance(node, (ast.Str, ast.Bytes)):
+            return ast.Constant(value=node.s)
+        
+        if isinstance(node, (ast.Num)):
+            return ast.Constant(value=node.n)
+        if isinstance(node, ast.NameConstant):
+            return ast.Constant(value=node.value)
+    else:
+        if isinstance(node, (ast.Str, ast3.Str, ast27.Str, ast.Bytes, ast3.Bytes)):
+            return ast.Constant(value=node.s)
 
-    if isinstance(node, (ast.Num, ast3.Num, ast27.Num)):
-        return ast.Constant(value=node.n)
+        if isinstance(node, (ast.Num, ast3.Num, ast27.Num)):
+            return ast.Constant(value=node.n)
 
-    if isinstance(node, (ast.NameConstant, ast3.NameConstant)):
-        return ast.Constant(value=node.value)
+        if isinstance(node, (ast.NameConstant, ast3.NameConstant)):
+            return ast.Constant(value=node.value)
 
     return node
 
